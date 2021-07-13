@@ -1,0 +1,42 @@
+apiVersion: 1.0.0
+metadata:
+  name: python-jupyter-notebook-
+projects:
+  - name: ai-model
+    source:
+      location: 'http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai.git'
+      startPoint: master
+      type: git
+components:
+  - id: ms-python/python/latest
+    preferences:
+      python.globalModuleInstallation: true
+    type: chePlugin
+  - mountSources: true
+    memoryLimit: 512Mi
+    type: dockerimage
+    image: 'registry.redhat.io/codeready-workspaces/plugin-java8-rhel8@sha256:bb8ec9c4964e39b335be589f027c4b5ec866fe5f742c7181473e70fff717655d'
+    alias: python
+commands:
+  - name: 1. Run
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/ai-model'
+        type: exec
+        command: python app.py
+        component: python
+  - name: Debug current file
+    actions:
+      - referenceContent: |
+          {
+            "version": "0.2.0",
+            "configurations": [
+              {
+                "name": "Python: Current File",
+                "type": "python",
+                "request": "launch",
+                "program": "${file}",
+                "console": "internalConsole"
+              }
+            ]
+          }
+        type: vscode-launch
