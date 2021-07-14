@@ -4,7 +4,7 @@ metadata:
 projects:
   - name: ai-model
     source:
-      location: 'http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai.git'
+      location: 'https://github.com/blues-man/2021-ai.git'
       startPoint: master
       type: git
 components:
@@ -18,11 +18,17 @@ components:
     image: 'registry.redhat.io/codeready-workspaces/plugin-java8-rhel8@sha256:bb8ec9c4964e39b335be589f027c4b5ec866fe5f742c7181473e70fff717655d'
     alias: python
 commands:
-  - name: 1. Run
+  - name: 1. Install dependencies
     actions:
       - workdir: '${CHE_PROJECTS_ROOT}/ai-model'
         type: exec
-        command: python app.py
+        command: pip install --user -r requirements.txt
+        component: python
+  - name: 2. Run
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/ai-model'
+        type: exec
+        command: gunicorn wsgi --bind=0.0.0.0:8080 --access-logfile=- --config gunicorn_config.py
         component: python
   - name: Debug current file
     actions:

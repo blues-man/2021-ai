@@ -1,5 +1,15 @@
 # 2021-ai
 
+## Edit in CodeReady Workspaces
+
+If you are running on a cluster with [CodeReadyWorkspaces](https://developers.redhat.com/products/codeready-workspaces/overview) like [Developer Sandbox](https://developers.redhat.com/developer-sandbox), you can start editing it directly from there.
+
+Run it with [Eclipse Che Factories](https://developers.redhat.com/che/creating-factories):
+
+NOTE: Change the address of Factory with your CRW URL
+
+[![Contribute](https://raw.githubusercontent.com/blues-man/nodejs-mongodb-sample/master/factory-contribute.svg)](https://codeready-openshift-workspaces.apps.cluster-b237.b237.sandbox1343.opentlc.com/factory?url=https://github.com/blues-man/2021-ai.git)
+
 ## Create model Image  
 ```
 make build
