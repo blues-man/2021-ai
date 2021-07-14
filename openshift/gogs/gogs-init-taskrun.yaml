@@ -46,7 +46,7 @@ spec:
 
           gogs_user = "$(params.GOGS_USER)"
           gogs_pwd = "$(params.GOGS_PASSWORD)"
-          webhookURL = "http://" + os.popen('oc get route el-webhook -o template --template="{{.spec.host}}"').read()
+          webhookURL = "http://" + os.popen('oc get route el-ml-pipeline -o template --template="{{.spec.host}}"').read()
           gogsURL = "http://" + os.popen('oc get svc gogs -o template --template="{{.spec.clusterIP}}"').read() + ":3000"
 
           # create admin user

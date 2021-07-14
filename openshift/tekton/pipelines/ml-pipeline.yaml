@@ -4,7 +4,7 @@ metadata:
   name: ml-pipeline
 spec:
   params:
-  - default: http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai.git
+  - default: https://github.com/blues-man/2021-ai.git
     name: APP_GIT_REPO
     type: string
   - default: master
@@ -13,7 +13,7 @@ spec:
   - default: quay.io/openshiftlabs/2021-ai
     name: APP_IMAGE
     type: string
-  - default: http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai-gitops
+  - default: https://github.com/blues-man/2021-ai-gitops.git
     name: APP_GIT_MANIFESTS_REPO
     type: string
   - default: main

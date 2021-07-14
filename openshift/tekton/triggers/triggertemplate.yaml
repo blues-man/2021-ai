@@ -1,0 +1,32 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: ml-pipeline
+spec:
+  params:
+    - name: git-revision
+    - name: git-commit-message
+    - name: git-repo-url
+    - name: git-repo-name
+    - name: content-type
+    - name: pusher-name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        labels:
+          tekton.dev/pipeline: ml-pipeline
+        name: ml-pipeline-trigger-$(uid)
+      spec:
+        params:
+          - name: APP_GIT_REPO
+            value: $(tt.params.git-repo-url)
+          - name: APP_GIT_REF
+            value: $(tt.params.git-revision)
+        pipelineRef:
+          name: ml-pipeline
+        workspaces:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: app-source-pvc
