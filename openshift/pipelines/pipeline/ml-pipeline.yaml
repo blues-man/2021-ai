@@ -1,0 +1,101 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ml-pipeline
+spec:
+  params:
+  - default: http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai.git
+    name: APP_GIT_REPO
+    type: string
+  - default: master
+    name: APP_GIT_REF
+    type: string
+  - default: quay.io/openshiftlabs/2021-ai
+    name: APP_IMAGE
+    type: string
+  - default: http://gogs-mlops-ci.apps.cluster-b237.b237.sandbox1343.opentlc.com/gogs/2021-ai-gitops
+    name: APP_GIT_MANIFESTS_REPO
+    type: string
+  - default: main
+    name: APP_GIT_MANIFESTS_REF
+    type: string
+  - default: gogs
+    name: GIT_USER
+    type: string
+  - default: gogs
+    name: GIT_PASS
+    type: string
+  - default: latest
+    name: APP_IMAGE_TAG
+    type: string
+  tasks:
+  - name: git-clone
+    params:
+    - name: url
+      value: $(params.APP_GIT_REPO)
+    - name: revision
+      value: $(params.APP_GIT_REF)
+    - name: submodules
+      value: "true"
+    - name: depth
+      value: "1"
+    - name: sslVerify
+      value: "true"
+    - name: deleteExisting
+      value: "true"
+    - name: verbose
+      value: "true"
+    - name: gitInitImage
+      value: registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:afc5d3f9efe26c7042635d43b8ffd09d67936e3d0b6b901dc08a33e20313d361
+    taskRef:
+      kind: ClusterTask
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: workspace
+  - name: s2i-python
+    params:
+    - name: VERSION
+      value: 3.8-ubi8
+    - name: PATH_CONTEXT
+      value: .
+    - name: TLSVERIFY
+      value: "true"
+    - name: IMAGE
+      value: $(params.APP_IMAGE):$(params.APP_IMAGE_TAG)
+    - name: BUILDER_IMAGE
+      value: registry.redhat.io/rhel8/buildah@sha256:6a68ece207bc5fd8db2dd5cc2d0b53136236fb5178eb5b71eebe5d07a3c33d13
+    runAfter:
+    - git-clone
+    taskRef:
+      kind: ClusterTask
+      name: s2i-python
+    workspaces:
+    - name: source
+      workspace: workspace
+  - name: update-deployment
+    params:
+    - name: GIT_REPOSITORY
+      value: $(params.APP_GIT_MANIFESTS_REPO)
+    - name: GIT_REF
+      value: $(params.APP_GIT_MANIFESTS_REF)
+    - name: GIT_USERNAME
+      value: $(params.GIT_USER)
+    - name: GIT_PASSWORD
+      value: $(params.GIT_PASS)
+    - name: NEW_IMAGE
+      value: $(params.APP_IMAGE)
+    - name: NEW_DIGEST
+      value: $(tasks.s2i-python.results.IMAGE_DIGEST)
+    - name: KUSTOMIZATION_PATH
+      value: environments/mlops
+    runAfter:
+    - s2i-python
+    taskRef:
+      kind: Task
+      name: git-update-deployment
+    workspaces:
+    - name: workspace
+      workspace: workspace
+  workspaces:
+  - name: workspace

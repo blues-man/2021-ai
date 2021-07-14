@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  annotations:
+    tekton.dev/pipelines.minVersion: 0.12.1
+    tekton.dev/tags: git
+  labels:
+    app.kubernetes.io/version: "0.1"
+    operator.tekton.dev/provider-type: community
+  name: git-update-deployment
+spec:
+  description: This Task can be used to update image digest in a Git repo using kustomize
+  params:
+  - name: GIT_REPOSITORY
+    type: string
+  - name: GIT_REF
+    type: string
+  - name: GIT_USERNAME
+    type: string
+  - name: GIT_PASSWORD
+    type: string
+  - name: NEW_IMAGE
+    type: string
+  - name: NEW_DIGEST
+    type: string
+  - name: KUSTOMIZATION_PATH
+    type: string
+  results:
+  - description: The commit SHA
+    name: commit
+  steps:
+  - image: docker.io/alpine/git:v2.26.2
+    name: git-clone
+    resources: {}
+    script: |
+      rm -rf git-update-digest-workdir
+      git clone -b $(params.GIT_REF) $(params.GIT_REPOSITORY) git-update-digest-workdir
+    workingDir: $(workspaces.workspace.path)
+  - image: k8s.gcr.io/kustomize/kustomize:v3.8.7
+    name: update-digest
+    resources: {}
+    script: |
+      cd git-update-digest-workdir/$(params.KUSTOMIZATION_PATH)
+      /app/kustomize edit set image $(params.NEW_IMAGE)@$(params.NEW_DIGEST)
+
+      echo "##########################"
+      echo "### kustomization.yaml ###"
+      echo "##########################"
+      cat kustomization.yaml
+    workingDir: $(workspaces.workspace.path)
+  - image: docker.io/alpine/git:v2.26.2
+    name: git-commit
+    resources: {}
+    script: |
+      cd git-update-digest-workdir
+      git config user.email "tekton-pipelines-ci@redhat.com"
+      git config user.name "tekton-pipelines-ci"
+
+      git status
+      git add $(params.KUSTOMIZATION_PATH)/kustomization.yaml
+      # git commit -m "[$(context.pipelineRun.name)] Image digest updated"
+      git commit -m "[ci] Image digest updated"
+
+      git remote add auth-origin $(echo $(params.GIT_REPOSITORY) | sed -E "s#https://(.*)#https://$(params.GIT_USERNAME):$(params.GIT_PASSWORD)@\1#g")
+      git push auth-origin $(params.GIT_REF)
+
+      RESULT_SHA="$(git rev-parse HEAD | tr -d '\n')"
+      EXIT_CODE="$?"
+      if [ "$EXIT_CODE" != 0 ]
+      then
+        exit $EXIT_CODE
+      fi
+      # Make sure we don't add a trailing newline to the result!
+      echo -n "$RESULT_SHA" > $(results.commit.path)
+    workingDir: $(workspaces.workspace.path)
+  workspaces:
+  - description: The workspace consisting of maven project.
+    name: workspace
