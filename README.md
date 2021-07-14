@@ -10,7 +10,7 @@
 
 ### Setup CI
 
-CI is implemented via OpenShift Pipelines. We also use Gogs are Git server for storing source code and Kubernetes manifests controlled by OpenShift GitOps.
+CI is implemented via OpenShift Pipelines. We also use Gogs as Git server for storing source code and Kubernetes manifests controlled by OpenShift GitOps.
 
 
 ```
