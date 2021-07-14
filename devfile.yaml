@@ -28,7 +28,7 @@ commands:
     actions:
       - workdir: '${CHE_PROJECTS_ROOT}/ai-model'
         type: exec
-        command: gunicorn wsgi --bind=0.0.0.0:8080 --access-logfile=- --config gunicorn_config.py
+        command: ~/.local/bin/gunicorn wsgi --bind=0.0.0.0:8080 --access-logfile=- --config gunicorn_config.py
         component: python
   - name: Debug current file
     actions:
