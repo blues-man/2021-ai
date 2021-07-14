@@ -1,5 +1,8 @@
 # MLOps: AI Model 
 
+![Architecture](architecture.png)
+
+
 ## Setup
 
 * Get an OpenShift 4.7+ cluster.
