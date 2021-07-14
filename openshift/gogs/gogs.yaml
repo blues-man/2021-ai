@@ -190,6 +190,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
