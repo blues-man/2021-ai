@@ -8,4 +8,4 @@ spec:
   - bindings:
     - ref: ml-pipeline
     template:
-      name: ml-pipeline
+      ref: ml-pipeline
